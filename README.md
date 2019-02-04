@@ -1,7 +1,8 @@
 # PocketCHIP-i3wm
 An updated guide for installing i3 window manager on pocket C.H.I.P
 
-`sudo apt get-update
+```
+sudo apt get-update
 
 sudo apt-get upgrade
 
@@ -9,17 +10,21 @@ sudo apt-get install i3 i3blocks git
 
 git clone https://github.com/AllGray/PocketDesk.git
 
-sudo ./PocketDesk/PocketDESK.sh`
+sudo ./PocketDesk/PocketDESK.sh
+```
 
 reboot your chip
 
-`cd /bin
+```
+cd /bin
 
-sudo nano brightness`
+sudo nano brightness
+```
 
 In this file, enter the following
 
-`#!/bin/bash
+```
+#!/bin/bash
 
 sysfs="/sys/class/backlight/backlight"
 max=`cat ${sysfs}/max_brightness`
@@ -71,15 +76,19 @@ case "$1" in
     ;;
   *)
     usage "invalid argument"
-   esac`
+   esac
+```
    
 Next, we'll make another script in /bin since we're already here.
 
-`sudo nano battery`
+```
+sudo nano battery
+```
 
 Input the following into the file, and save:
 
-`VOLTAGE_DROP=69
+```
+VOLTAGE_DROP=69
 MAX_VOLTAGE=4214
 MIN_VOLTAGE=3600
 is_charging=$(cat /usr/lib/pocketchip-batt/charging)
@@ -89,21 +98,27 @@ excess_voltage=$(bc <<< "$voltage-$voltage_offset-$MIN_VOLTAGE")
 max_excess_voltage=$(bc <<< "$MAX_VOLTAGE-$VOLTAGE_DROP-$MIN_VOLTAGE")
 percentage=$(bc <<< "scale=2; $excess_voltage/($max_excess_voltage/100)")
 status="-" && [[ "$is_charging" == 1 ]] && status=" ^ ^ "
-echo $percentage$status`
+echo $percentage$status
+```
 
 Make sure these scripts have the proper permissions with:
 
-`sudo chmod 775 brightness && sudo chmod 775 battery`
+```
+sudo chmod 775 brightness && sudo chmod 775 battery
+```
 
 And we're done working with those scripts.
 
-`cd /etc
+```
+cd /etc
 
-sudo nano i3blocks.conf`
+sudo nano i3blocks.conf
+```
 
 Paste the following content into i3blocks.conf:
 
-`# i3blocks config file
+```
+# i3blocks config file
 #
 # Please see man i3blocks for a complete reference!
 # The man page is also hosted at http://vivien.github.io/i3blocks
@@ -345,10 +360,13 @@ bar {
 }
 
 for_window [class="^.*"] border pixel 1
-new_window 1pixel`
+new_window 1pixel
+```
 
 Switch to this new config
 
-`sudo mv config1 config`
+```
+sudo mv config1 config
+```
 
 then hit mod+Shift+R to reload i3 with the custom configurations we've done under effect. Done!
