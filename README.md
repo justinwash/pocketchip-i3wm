@@ -1,58 +1,25 @@
-# i3wm-chip
-i3wm configuration for the PocketCHIP
-
+# PocketCHIP-i3wm
 An updated guide for installing i3 window manager on pocket C.H.I.P
-Though I love my Pocket C.H.I.P. and realize that it's more or less the only product of its kind (handheld full Linux device with a physical keyboard and decent battery life) I've never found myself to be happy with PocketHome. I frequently work with CLI-based tools, and having to navigate around the rather elementary and clearly PICO-8 oriented interface wasn't really doing it for me. So, I decided to set out to configure my Pocket C.H.I.P. in a more professional, traditional Linux fashion. A guide exists for this already, but not only does it have to be viewed from an archive, but also, I found it to be outdated, as well as non-functional in some places. So here's my shot at making a better tutorial.
 
-One thing to remember is the concept of the "mod" key, which is central to navigating your desktop in i3wm. In this guide, the mod key will always be referring to ALT.
-
-Getting Ready
-
-To start, we'll be installing i3 itself, as well as getting things ready to install a tool for running full desktops on the Pocket C.H.I.P., PocketDesk, afterwards.
-
-sudo apt get-update
+`sudo apt get-update
 
 sudo apt-get upgrade
 
 sudo apt-get install i3 i3blocks git
 
-Installing an SSH server on the Pocket C.H.I.P. (Optional)
-
-If you'd like to make this process ten times easier for you, I strongly suggest setting up your Pocket C.H.I.P. for SSH. To do this:
-
-sudo apt-get install openssh-server
-
-Once this is done, you're free to use an SSH client on a laptop or desktop to connect to your Pocket C.H.I.P. to enter commands remotely. To connect from another Linux device, make sure you have OpenSSH client installed, then enter the following command into the terminal of the client device:
-
-ssh chip@192.168.1.X
-
-with chip being your current username, and X being the last digit of your Pocket C.H.I.P.'s current IP address locally, for instance, "192.168.1.5". If your network is configured differently than the norm, then it's possible you'll have to adjust other values in the IP, but for most people, just changing the last number should work just fine.
-
-If you're on a Windows machine, you can either install putty or use the native OpenSSH client for Windows 10, then follow the above steps.
-
-Back to business: Installing PocketDesk and getting started with i3wm
-
-Once that's finished, we'll be installing PocketDesk. This is helpful because it gives the user the option to run the full CHIP desktop image, as well as making sure the keyboard, touchscreen, and such function properly in environments other than PocketHome. Installing this is pretty easy, just run the following commands:
-
 git clone https://github.com/AllGray/PocketDesk.git
 
-sudo ./PocketDesk/PocketDESK.sh
+sudo ./PocketDesk/PocketDESK.sh`
 
-After this, go ahead and reboot your chip, and you'll be presented with a login screen. By default, this screen will log out into PocketHome. However, you can change which environment you would like to log into by hitting ESC, then left on the "dpad" twice to get to the window manager/desktop environment menu. Use the dpad to scroll to whichever you would like to boot into, in our case "i3", hit enter. Enter your credentials (username "chip" and password "chip" by default, however, you really should change this as soon as you get the chance) then hit enter again. This should successfully drop you into a session of i3. Feel free to follow the setup prompt to configure your i3 so you can get a feel for it, however, we'll just be replacing it with a new config, so don't worry about it too much.
+reboot your chip
 
-Configuration of i3wm
+`cd /bin
 
-First, we'll need to make a script for changing brightness, because this option isn't easily available in i3 with our current config. Go ahead and
+sudo nano brightness`
 
-cd /bin
+In this file, enter the following
 
-So we're in the folder where we'll be storing the script. Now open a new text file using your favorite text editor, although nano is generally a good go-to for beginners:
-
-sudo nano brightness
-
-In this file, enter the following: (I strongly recommend using SSH to do this, it's not technically necessary, but being able to paste these things in is going to make your life so much easier)
-
- #!/bin/bash
+`#!/bin/bash
 
 sysfs="/sys/class/backlight/backlight"
 max=`cat ${sysfs}/max_brightness`
@@ -104,14 +71,15 @@ case "$1" in
     ;;
   *)
     usage "invalid argument"
-   esac
-Next, we'll make another script in /bin since we're already here. This one will be called battery, and will deal with getting an (admittedly somewhat rough) battery charge percentage from the Pocket C.H.I.P.'s hardware.
+   esac`
+   
+Next, we'll make another script in /bin since we're already here.
 
-sudo nano battery
+`sudo nano battery`
 
 Input the following into the file, and save:
 
-VOLTAGE_DROP=69
+`VOLTAGE_DROP=69
 MAX_VOLTAGE=4214
 MIN_VOLTAGE=3600
 is_charging=$(cat /usr/lib/pocketchip-batt/charging)
@@ -121,26 +89,21 @@ excess_voltage=$(bc <<< "$voltage-$voltage_offset-$MIN_VOLTAGE")
 max_excess_voltage=$(bc <<< "$MAX_VOLTAGE-$VOLTAGE_DROP-$MIN_VOLTAGE")
 percentage=$(bc <<< "scale=2; $excess_voltage/($max_excess_voltage/100)")
 status="-" && [[ "$is_charging" == 1 ]] && status=" ^ ^ "
-echo $percentage$status
-For more info on how to edit this script to be more accurate to your battery's condition, see this post.
+echo $percentage$status`
 
-Now we'll make sure these scripts have the proper permissions with:
+Make sure these scripts have the proper permissions with:
 
-sudo chmod 775 brightness && sudo chmod 775 battery
+`sudo chmod 775 brightness && sudo chmod 775 battery`
 
 And we're done working with those scripts.
 
-By default you'll notice that the status bar on the bottom of the screen (known as the i3bar) doesn't fit well on the screen, and some of the information it's trying to display isn't really functioning properly. So let's replace this status bar with one tailored to the Pocket C.H.I.P.'s hardware. To get started, change to the /etc directory:
+`cd /etc
 
-cd /etc
+sudo nano i3blocks.conf`
 
-and open a new text file called "i3blocks.conf"
+Paste the following content into i3blocks.conf:
 
-sudo nano i3blocks.conf
-
-This is a pretty simple file to customize if you so choose, but for right now, let's start with a simple baseline that displays internet connection status, battery charge level, and the date and time. Paste the following content into i3blocks.conf:
-
-# i3blocks config file
+`# i3blocks config file
 #
 # Please see man i3blocks for a complete reference!
 # The man page is also hosted at http://vivien.github.io/i3blocks
@@ -382,11 +345,10 @@ bar {
 }
 
 for_window [class="^.*"] border pixel 1
-new_window 1pixel
-This config file creates a couple super handy new features. One is the mod+R resize mode, in which you can change how large or small you want the current focused window to be with the arrow keys. Another is the mod+P settings mode, in which the up and down arrows can be used to change brightness, and left and right can be used to change volume. Finally, there's a sort of pseudo-mode toggled via mod+BackSpace which puts the Pocket C.H.I.P. into a screen off, networking off, low energy consumption mode.
+new_window 1pixel`
 
-Switch to this new config using
+Switch to this new config
 
-sudo mv config1 config
+`sudo mv config1 config`
 
 then hit mod+Shift+R to reload i3 with the custom configurations we've done under effect. Done!
